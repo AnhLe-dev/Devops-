@@ -22,7 +22,7 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
           POSTGRES_DB: tododb
         ports:
-          - 5438:5432
+          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U postgres -d tododb"
           --health-interval 10s
@@ -37,12 +37,12 @@ jobs:
         env:
           PGPASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
         run: |
-          until pg_isready -h 127.0.0.1 -p 5438 -U postgres -d tododb; do
+          until pg_isready -h 127.0.0.1 -p 5432 -U postgres -d tododb; do
             echo "Waiting for Postgres to open TCP connections..."
             sleep 2
           done
 
-          psql -h 127.0.0.1 -p 5438 -U postgres -d tododb -f ./database/database.sql
+          psql -h 127.0.0.1 -p 5432 -U postgres -d tododb -f ./database/database.sql
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -57,7 +57,7 @@ jobs:
           DB_USER: postgres
           DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
           DB_HOST: localhost
-          DB_PORT: 5438
+          DB_PORT: 5432
           DB_NAME: tododb
           NODE_ENV: test
         run: cd backend && npm test

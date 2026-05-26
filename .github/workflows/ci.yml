@@ -100,3 +100,33 @@ jobs:
           context: ./frontend
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/devops-frontend-cos1203:1.0
+
+  # ─────────────────────────────────────────
+  # JOB 3: DEPLOY TO VPS
+  # ─────────────────────────────────────────
+  deploy:
+    name: Deploy to Production
+    needs: build-and-push   # Chỉ deploy khi build thành công
+    runs-on: ubuntu-latest
+
+    # Chỉ deploy khi push lên main (không chạy khi mở PR)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Execute Deployment Commands via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/devops-project-hcm-cos1203
+
+            sudo git pull origin main
+
+            sudo docker compose pull
+
+            sudo docker compose up -d
